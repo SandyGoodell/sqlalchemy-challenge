@@ -42,12 +42,35 @@ def index():
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    # Convert the query results to a dictionary using date as the key and prcp as the value.
+    # Query for the date and precipitation for the last year
     precipitation = session.query(Measurement.date, Measurement.prcp).all()
     # Dict with date as the key and prcp as the value
     precip = {date: prcp for date, prcp in precipitation}
     return jsonify(precip)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/api/v1.0/stations")
+def stations():
+    # Return a JSON list of stations from the dataset.
+    results = session.query(Station.station).all()
+    stations = list(np.ravel(results))
 
+    return jsonify(stations=stations)
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+    # Query the dates and temperature observations of the most active station for the last year of data.
+    prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+
+    results = session.query(Measurement.tobs).filter(Measurement.station == "USC00519281").\
+    filter(Measurement.date >= prev_year).all()
+    # Return a JSON list of temperature observations (TOBS) for the previous year.
+
+    # Unravel results into a 1D array and convert to a list
+    temps = list(np.ravel(results))
+
+    # Return the results
+    return jsonify(temps=temps)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
