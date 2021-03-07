@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import datetime as dt
-from datetime import datetime, date, time, timedelta
+# from datetime import datetime, date, time, timedelta
 
 # Python SQL toolkit and Object Relational Mapper
 import sqlalchemy
@@ -38,7 +38,7 @@ def index():
         f"<a href='/api/v1.0/precipitation'>/api/v1.0/precipitation</a><br/>"
         f"<a href='/api/v1.0/stations'>/api/v1.0/stations</a><br/>"
         f"<a href='/api/v1.0/tobs'>/api/v1.0/tobs</a><br/>"
-        f"<a href='/api/v1.0/temp/start/end'>start/end</a><br/>"
+        # f"<a href='/api/v1.0/temp/start/end'>start/end</a><br/>"
     )
 
 @app.route('/api/v1.0/precipitation')
@@ -91,32 +91,6 @@ def tobs():
 
     # Return the results
     return jsonify(temps=temps)
-
-@app.route("/api/v1.0/temp/<start>")
-@app.route("/api/v1.0/temp/<start>/<end>")
-def stats(start=None, end=None):
-    """Return TMIN, TAVG, TMAX."""
-
-    # Select statement
-    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
-
-    if not end:
-        # calculate TMIN, TAVG, TMAX for dates greater than start
-        results = session.query(*sel).\
-            filter(Measurement.date >= start).all()
-        # Unravel results into a 1D array and convert to a list
-        temps = list(np.ravel(results))
-        return jsonify(temps)
-
-    # calculate TMIN, TAVG, TMAX with start and stop
-    results = session.query(*sel).\
-        filter(Measurement.date >= start).\
-        filter(Measurement.date <= end).all()
-    # Unravel results into a 1D array and convert to a list
-    temps = list(np.ravel(results))
-    return jsonify(temps=temps)
-
-session.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
