@@ -41,21 +41,34 @@ def index():
         # f"<a href='/api/v1.0/temp/start/end'>start/end</a><br/>"
     )
 
-@app.route("/api/v1.0/precipitation")
+@app.route('/api/v1.0/precipitation')
 def precipitation():
-    # Query for the date and precipitation for the last year
-    precipitation = session.query(Measurement.date, Measurement.prcp).all()
-    # Dict with date as the key and prcp as the value
-    precip = {date: prcp for date, prcp in precipitation}
-    return jsonify(precip)
+     # Query precipitation data
+    prec_results = session.query(Measurement.date, Measurement.prcp).all()
 
-@app.route("/api/v1.0/stations")
+    precipitation_data = []
+    for date, prcp in prec_results:
+        precipitation_dict = {}
+        precipitation_dict["Date"] = date
+        precipitation_dict["Precipitation"] = prcp
+        precipitation_data.append(precipitation_dict)
+
+    return jsonify(precipitation_data)
+
+@app.route('/api/v1.0/stations')
 def stations():
-    # Return a JSON list of stations from the dataset.
-    results = session.query(Station.station).all()
-    all_stations = list(np.ravel(results))
+    # Query list of stations data
+    stat_results = session.query(Station.station, Station.name).all()
 
-    return jsonify(all_stations)
+    station_list = []
+    for station, name in stat_results:
+        station_dict = {}
+        station_dict["Station ID"] = station
+        station_dict["Station Name"] = name
+
+        station_list.append(station_dict)
+    
+    return jsonify(station_list)
 
 @app.route("/api/v1.0/tobs")
 def tobs():
@@ -71,8 +84,6 @@ def tobs():
 
     # Return the results
     return jsonify(temps=temps)
-
-
 
 session.close
 
